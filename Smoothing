@@ -1,0 +1,34 @@
+# bin smoothers
+span <- 3.5
+tmp <- polls_2008 %>%
+  crossing(center = polls_2008$day) %>%
+  mutate(dist = abs(day - center)) %>%
+  filter(dist <= span) 
+
+tmp %>% filter(center %in% c(-125, -55)) %>%
+  ggplot(aes(day, margin)) +   
+  geom_point(data = polls_2008, size = 3, alpha = 0.5, color = "grey") +
+  geom_point(size = 2) +    
+  geom_smooth(aes(group = center), 
+              method = "lm", formula=y~1, se = FALSE) +
+  facet_wrap(~center)
+
+# larger span
+span <- 7 
+fit <- with(polls_2008, 
+            ksmooth(day, margin, kernel = "box", bandwidth = span))
+
+polls_2008 %>% mutate(smooth = fit$y) %>%
+  ggplot(aes(day, margin)) +
+    geom_point(size = 3, alpha = .5, color = "grey") + 
+  geom_line(aes(day, smooth), color="red")
+
+# kernel
+span <- 7
+fit <- with(polls_2008, 
+            ksmooth(day, margin, kernel = "normal", bandwidth = span))
+
+polls_2008 %>% mutate(smooth = fit$y) %>%
+  ggplot(aes(day, margin)) +
+  geom_point(size = 3, alpha = .5, color = "grey") + 
+  geom_line(aes(day, smooth), color="red")
